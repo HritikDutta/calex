@@ -219,6 +219,9 @@ void operate(Stack<double>& values, const char* str, int idx)
 		//For debugging
 		#ifdef DEBUG
 		std::cout << "operation : " << val1 << " " << str[idx] << " " << val2 << " = " << res << std::endl;
+		std::cout << "stack     : ";
+		values.display();
+		std::cout << std::endl;
 		#endif
 		
 		//For >= and <=
@@ -286,6 +289,9 @@ double solve(const char* str)
 			{
 				#ifdef DEBUG
 				std::cout << "operation : !(" << values.top() << ") = " << !(values.top()) << std::endl;
+				std::cout << "stack     : ";
+				values.display();
+				std::cout << std::endl;
 				#endif
 				values.top() = !(values.top());
 			}
@@ -339,7 +345,7 @@ int main(int argc, char const *argv[])
 	double res = solve(post);
 
 	#ifdef DEBUG
-		std::cout << "result    : ";
+	std::cout << "result    : ";
 	#endif
 
 	//Show the solution to the expression
