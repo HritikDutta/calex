@@ -4,15 +4,15 @@
 #include "stack.hpp"
 
 //Uncomment for debugging
-// #define DEBUG
+#define DEBUG
 
 //This is temporary
 //Later size of input string will be calculated
 #define MAX_SIZE 100
 
 //Mathematical Constants
-const double PI = 3.141593;
-const double E = 2.718282;
+const double PI = M_PI;
+const double E = M_E;
 
 //Check for balanced brackets in expression
 bool balanced(const char* str)
@@ -277,25 +277,40 @@ const char* in_post(const char*& str)
 		if (isDigit(str[idx]) || str[idx] == '.')
 		{
 			new_str[n_idx++] = str[idx];
+			allow_neg = false;
 		} else if (isAlphabet(str[idx]))
         {
 			char constant = checkForConstants(str, idx);
 
 			if (constant)
+			{
 				new_str[n_idx++] = constant;
-			
-			if (!constant)
+				allow_neg = false;
+			} else
 			{
 				char fn = checkForFunctions(str, idx);
 
 				if (fn)
+				{
 					op.push(fn);
+					allow_neg = true;
+				}
 			}
 			//As idx is pushed to the end of the function,
 			//It must be moved one idx back
 			idx--;
         } else if (isBinaryOp(str[idx]))
 		{
+			//If unary '-' is encountered
+			if (allow_neg && str[idx] == '-')
+			{
+				//Unary '-' is represented as 'n'
+				op.push('n');
+				allow_neg = false;
+
+				continue;
+			}
+
 			//Add space after each number
 			if (isDigit(new_str[n_idx - 1]))
 			{
@@ -322,16 +337,6 @@ const char* in_post(const char*& str)
 			allow_neg = true;
 		} else if (isUnaryOp(str[idx]))
 		{
-			//If unary '-' is encountered
-			if (allow_neg && str[idx] == '-')
-			{
-				//Unary '-' is represented as 'n'
-				op.push('n');
-				allow_neg = false;
-
-				continue;
-			}
-
 			//Pop operators and add to string until an operator of greater precedence is found
 			while(!op.empty() && op.top() != '(' && greaterPrec(str[idx], op.top()))
 			{
@@ -435,6 +440,9 @@ double operateUn(const char& op, const double& val)
 {
 	switch(op)
 	{
+	case '!':
+		return !(val);
+	
 	case 's':
 		return sin(val);
 	
@@ -455,9 +463,6 @@ double operateUn(const char& op, const double& val)
 	
 	case 'L':
 		return log(val);
-	
-	case '!':
-		return !(val);
 	
 	case 'n':
 		return val * -1.0;
