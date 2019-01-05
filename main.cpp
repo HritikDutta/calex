@@ -4,7 +4,7 @@
 #include "stack.hpp"
 
 //Uncomment for debugging
-// #define DEBUG
+#define DEBUG
 
 //This is temporary
 //Later size of input string will be calculated
@@ -158,6 +158,7 @@ const char checkForConstants(const char*& str, int& idx)
 			return '\0';
 	
 	case 'e':
+		idx += 1;
 		return 'E';
 	
 	default:
