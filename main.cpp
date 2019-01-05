@@ -575,9 +575,11 @@ double solve(const char* str)
 
 				#ifdef DEBUG
 				if (!values.empty())
+				{
 					std::cout << "stack     : ";
 					values.display();
 					std::cout << std::endl;
+				}
 				#endif
 			}
 
