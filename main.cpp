@@ -266,7 +266,7 @@ bool greaterPrec(const char& curOp, const char& opInStack)
 //Convert expression from infix to postfix
 const char* in_post(const char*& str)
 {
-    Stack<char> op;
+	Stack<char> op;
 	char* new_str = new char[MAX_SIZE];
 
 	int n_idx = 0;
