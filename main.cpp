@@ -77,8 +77,8 @@ const int getUnPrec(const char& ch)
 	case 's':
 	case 'c':
 	case 't':
-	case 'S':
 	case 'C':
+	case 'S':
 	case 'T':
 		return 1;
 	
@@ -114,21 +114,17 @@ bool isAlphabet(const char& ch)
 		|| (ch >= 'a' && ch <= 'z');
 }
 
-//Compare two strings
+//Compare subset of first string to given string
 bool compareSubString(const char*& str1, int beg, int len, const char* str2)
 {
 	int idx = 0;
 	while (idx < len)
-	{
+	{	
 		if (str1[beg + idx] != str2[idx])
 			return false;
 		
 		idx++;
 	}
-
-	//If 2nd string hasn't ended then strings are not equal
-	if (str2[idx] != '\0')
-		return false;
 	
 	return true;
 }
@@ -164,15 +160,15 @@ char checkForFunctions(const char*& str, int& idx)
 			return '\0';
 	
 	case 'c':
-		if (compareSubString(str, idx, 3, "cos"))
+		if (compareSubString(str, idx, 5, "cosec"))
+		{
+			idx += 5;
+			return 'S';
+		}
+		else if (compareSubString(str, idx, 3, "cos"))
 		{
 			idx += 3;
 			return 'c';
-		}
-		else if (compareSubString(str, idx, 3, "cosec"))
-		{
-			idx += 3;
-			return 'S';
 		}
 		else if (compareSubString(str, idx, 3, "cot"))
 		{
@@ -414,6 +410,13 @@ void operate(Stack<double>& values, const char* str, int idx)
 
 		double res = operateUn(str[idx], val);
 		values.push(res);
+
+		#ifdef DEBUG
+		std::cout << "operation : " << str[idx] << " " << val << " = " << res << std::endl;
+		std::cout << "stack     : ";
+		values.display();
+		std::cout << std::endl;
+		#endif
 	} else if (isBinaryOp(str[idx]))
 	{
 		//If binary operator is encountered
