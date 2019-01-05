@@ -10,6 +10,10 @@
 //Later size of input string will be calculated
 #define MAX_SIZE 100
 
+//Mathematical Constants
+const double PI = 3.141593;
+const double E = 2.718282;
+
 //Check for balanced brackets in expression
 bool balanced(const char* str)
 {
@@ -74,12 +78,15 @@ const int getUnPrec(const char& ch)
 	case '!':
 		return 2;
 
+	//Trigonometric functions
 	case 's':
 	case 'c':
 	case 't':
 	case 'C':
 	case 'S':
 	case 'T':
+	//Natural Log
+	case 'L':
 		return 1;
 	
 	case 'n':
@@ -90,15 +97,22 @@ const int getUnPrec(const char& ch)
 	}
 }
 
-
+//Check if binary operator exists
 bool isBinaryOp(const char& op)
 {
 	return getBinPrec(op) != -1;
 }
 
+//Check if unary operator exists
 bool isUnaryOp(const char& op)
 {
 	return getUnPrec(op) != -1;
+}
+
+//Check if constant exists
+bool isConstant(const char& ch)
+{
+	return ch == 'P' || ch == 'E';
 }
 
 //Check for digits
@@ -129,15 +143,55 @@ bool compareSubString(const char*& str1, int beg, int len, const char* str2)
 	return true;
 }
 
+//Checks if a constant is at the given index and moves index to the end
+//Constants are represneted by their first letter in capital
+const char checkForConstants(const char*& str, int& idx)
+{
+	switch(str[idx])
+	{
+	case 'p':
+		if (compareSubString(str, idx, 2, "pi"))
+		{
+			idx += 2;
+			return 'P';
+		} else
+			return '\0';
+	
+	case 'e':
+		return 'E';
+	
+	default:
+		return '\0';
+	}
+}
+
+//Returns the value of a constant
+//Before using this function, check if the character is a constant or not
+double getConstValue(const char& ch)
+{
+	switch(ch)
+	{
+	case 'P':
+		return PI;
+
+	case 'E':
+		return E;
+	}
+}
+
 //Checks if a function is at the given index and moves index to the end
 //Most functions are represented by their first letters
-//Sec, Cosec and Cot are represented by the capital letters of their respective inverses.
-char checkForFunctions(const char*& str, int& idx)
+//Sec, Cosec and Cot are represented by the capital letters of their respective inverses
+const char checkForFunctions(const char*& str, int& idx)
 {
 	switch(str[idx])
 	{
 	case 'l':
-		if (compareSubString(str, idx, 3, "log"))
+		if (compareSubString(str, idx, 2, "ln"))
+		{
+			idx += 2;
+			return 'L';
+		} else if (compareSubString(str, idx, 3, "log"))
 		{
 			idx += 3;
 			return 'l';
@@ -224,11 +278,18 @@ const char* in_post(const char*& str)
 			new_str[n_idx++] = str[idx];
 		} else if (isAlphabet(str[idx]))
         {
-			char fn = checkForFunctions(str, idx);
-			
-			if (fn)
-				op.push(fn);
+			char constant = checkForConstants(str, idx);
 
+			if (constant)
+				new_str[n_idx++] = constant;
+			
+			if (!constant)
+			{
+				char fn = checkForFunctions(str, idx);
+
+				if (fn)
+					op.push(fn);
+			}
 			//As idx is pushed to the end of the function,
 			//It must be moved one idx back
 			idx--;
@@ -391,6 +452,9 @@ double operateUn(const char& op, const double& val)
 	case 'T':
 		return 1 / tan(val);
 	
+	case 'L':
+		return log(val);
+	
 	case '!':
 		return !(val);
 	
@@ -491,6 +555,9 @@ double solve(const char* str)
 			values.top() += mult * (str[idx] - '0');
 		} else if (str[idx] == '.') {
 			decimal = true;
+		} else if (isConstant(str[idx]))
+		{
+			values.push(getConstValue(str[idx]));
 		} else
 		{			
 			//Reset variables for next number
