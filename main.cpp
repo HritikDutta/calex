@@ -276,25 +276,26 @@ const char* in_post(const char*& str)
 			allow_neg = false;
 		} else if (isAlphabet(str[idx]) && str[idx] != 'n')
         {
-			char constant = checkForConstants(str, idx);
+			char ch = checkForConstants(str, idx);
 
-			if (constant)
+			if (ch)
 			{
-				new_str[n_idx++] = constant;
+				new_str[n_idx++] = ch;
 				allow_neg = false;
 			} else
 			{
-				char fn = checkForFunctions(str, idx);
+				ch = checkForFunctions(str, idx);
 
-				if (fn)
+				if (ch)
 				{
-					op.push(fn);
+					op.push(ch);
 					allow_neg = true;
 				}
 			}
 			//As idx is pushed to the end of the function,
 			//It must be moved one idx back
-			idx--;
+			if (ch)
+				idx--;
         } else if (isUnaryOp(str[idx]))
 		{
 			//Pop operators and add to string until an operator of greater precedence is found
