@@ -10,10 +10,6 @@
 //Later size of input string will be calculated
 #define MAX_SIZE 100
 
-//Mathematical Constants
-const double PI = M_PI;
-const double E = M_E;
-
 //Check for balanced brackets in expression
 bool balanced(const char* str)
 {
@@ -173,10 +169,10 @@ double getConstValue(const char& ch)
 	switch(ch)
 	{
 	case 'P':
-		return PI;
+		return M_PI;
 
 	case 'E':
-		return E;
+		return M_E;
 	}
 }
 
