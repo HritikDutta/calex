@@ -598,7 +598,7 @@ double solve(const char* str)
 int main(int argc, char const *argv[])
 {
 	#ifdef DEBUG
-	std::cout << "COMMENT 'DEBUG' BEFORE COMMITTING GODDAMNIT" << std::endl;
+	std::cout << "COMMENT '#define DEBUG' BEFORE COMMITTING GODDAMNIT" << std::endl;
 	#endif
 
 	//If no string is given
