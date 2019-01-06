@@ -269,7 +269,7 @@ const char* in_post(const char*& str)
 	Stack<char> op;
 	char* new_str = new char[MAX_SIZE];
 
-	int n_idx = 0;
+	int idx = 0, n_idx = 0;
 	bool allow_neg = true;  //Tracks if '-' is unary or binary
 
 	for (int idx = 0; str[idx]; idx++)
@@ -278,7 +278,7 @@ const char* in_post(const char*& str)
 		{
 			new_str[n_idx++] = str[idx];
 			allow_neg = false;
-		} else if (isAlphabet(str[idx]))
+		} else if (isAlphabet(str[idx]) && str[idx] != 'n')
         {
 			char constant = checkForConstants(str, idx);
 
@@ -299,7 +299,21 @@ const char* in_post(const char*& str)
 			//As idx is pushed to the end of the function,
 			//It must be moved one idx back
 			idx--;
-        } else if (isBinaryOp(str[idx]))
+        } else if (isUnaryOp(str[idx]))
+		{
+			//Pop operators and add to string until an operator of greater precedence is found
+			while(!op.empty() && op.top() != '(' && greaterPrec(str[idx], op.top()))
+			{
+				//Overwrite extra space if operator needs to be written
+				if (new_str[n_idx - 1] == ' ')
+					n_idx--;
+
+				new_str[n_idx++] = op.top();
+				op.pop();
+			}
+
+			op.push(str[idx]);
+		} else if (isBinaryOp(str[idx]))
 		{
 			//If unary '-' is encountered
 			if (allow_neg && str[idx] == '-')
@@ -335,20 +349,6 @@ const char* in_post(const char*& str)
 
 			//'-' after any operator will be unary
 			allow_neg = true;
-		} else if (isUnaryOp(str[idx]))
-		{
-			//Pop operators and add to string until an operator of greater precedence is found
-			while(!op.empty() && op.top() != '(' && greaterPrec(str[idx], op.top()))
-			{
-				//Overwrite extra space if operator needs to be written
-				if (new_str[n_idx - 1] == ' ')
-					n_idx--;
-
-				new_str[n_idx++] = op.top();
-				op.pop();
-			}
-
-			op.push(str[idx]);
 		} else if (str[idx] == '(')
 		{
             if (isDigit(str[idx - 1]))
@@ -597,6 +597,10 @@ double solve(const char* str)
 
 int main(int argc, char const *argv[])
 {
+	#ifdef DEBUG
+	std::cout << "COMMENT 'DEBUG' BEFORE COMMITTING GODDAMNIT" << std::endl;
+	#endif
+
 	//If no string is given
 	if (argc < 2)
 		return 0;
