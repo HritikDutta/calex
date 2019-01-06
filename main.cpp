@@ -4,7 +4,7 @@
 #include "stack.hpp"
 
 //Uncomment for debugging
-// #define DEBUG
+#define DEBUG
 
 //This is temporary
 //Later size of input string will be calculated
@@ -247,15 +247,15 @@ const char checkForFunctions(const char*& str, int& idx)
 	}
 }
 
-//Check if current operator has greater precidance than the one in stack
+//Check if current operator has greater precedence than the one in stack
 bool greaterPrec(const char& curOp, const char& opInStack)
 {
-	//Unary operators have greater precidance than binary operators
+	//Unary operators have greater precedence than binary operators
 
 	if (isUnaryOp(curOp) && isBinaryOp(opInStack))
-		return true;
-	else if (isBinaryOp(curOp) && isUnaryOp(opInStack))
 		return false;
+	else if (isBinaryOp(curOp) && isUnaryOp(opInStack))
+		return true;
 
 	if (isUnaryOp(curOp) && isUnaryOp(opInStack))
 		return getUnPrec(curOp) >= getUnPrec(opInStack);
