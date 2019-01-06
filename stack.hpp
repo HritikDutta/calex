@@ -16,44 +16,44 @@ private:
 
 		Node(T value)
 		: data(value), next(nullptr) {}
-	}* topNode;
+	}* head;
 
 public:
 	Stack()
-	: topNode(nullptr) {}
+	: head(nullptr) {}
 
 	void push(T data)
 	{
 		Node* newNode = new Node(data);
 
-		newNode->next = topNode;
-		topNode = newNode;
+		newNode->next = head;
+		head = newNode;
 	}
 
 	bool empty()
 	{
-		return topNode == nullptr;
+		return head == nullptr;
 	}
 
 	T& top()
 	{
-		return topNode->data;
+		return head->data;
 	}
 
 	void pop()
 	{
-		if (topNode == nullptr)
+		if (head == nullptr)
 			return;
 
-		Node* temp = topNode;
-		topNode = topNode->next;
+		Node* temp = head;
+		head = head->next;
 
 		delete temp;
 	}
 
 	void display()
 	{
-		Node* index = topNode;
+		Node* index = head;
 
 		while (index)
 		{
@@ -62,15 +62,32 @@ public:
 		}
 
 		//Remove the last comma
-		if (topNode)
+		if (head)
 			std::cout << "\b\b ";
+	}
+
+	int size()
+	{
+		int cnt = 0;
+		Node* temp = head;
+		while (!temp)
+		{
+			cnt++;
+			temp = temp->next;
+		}
+
+		return cnt;
+	}
+
+	void clean()
+	{
+		while (!empty())
+			pop();
 	}
 
 	~Stack()
 	{
 		while(!empty())
-		{
 			pop();
-		}
 	}
 };
