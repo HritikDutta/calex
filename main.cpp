@@ -420,6 +420,9 @@ const char* in_post(const char*& str)
 				new_str[n_idx++] = op.top();
 				op.pop();
 			}
+
+			if (isDigit(new_str[n_idx - 1]))
+				new_str[n_idx++] = ' ';
 		}
 	}
 
