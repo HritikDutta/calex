@@ -255,6 +255,41 @@ const char checkForFunctions(const char*& str, int& idx)
 	}
 }
 
+//Use character codes for operator to give the actual operator
+//Only implemented for operators using more than one character
+const char* getOperatorName(const char& op)
+{
+	switch(op)
+	{
+	case 'l':
+		return "log";
+	
+	case 'L':
+		return "ln";
+	
+	case 's':
+		return "sin";
+	
+	case 'c':
+		return "cos";
+	
+	case 't':
+		return "tan";
+	
+	case 'C':
+		return "sec";
+	
+	case 'S':
+		return "cosec";
+	
+	case 'T':
+		return "cot";
+	
+	default:
+		return &op;
+	}
+}
+
 //Check if current operator has greater precedence than the one in stack
 bool greaterPrec(const char& curOp, const char& opInStack)
 {
@@ -609,11 +644,11 @@ double solve(const char* str)
 				switch (e)
 				{
 				case NO_OPERAND_UN:
-					std::cerr << "Error: no operand for " << str[idx] << std::endl;
+					std::cerr << "Error: no operand for " << getOperatorName(str[idx]) << std::endl;
 					break;
 				
 				case NO_OPERANDS_BIN:
-					std::cerr << "Error: less than two operands for " << str[idx] << std::endl;
+					std::cerr << "Error: less than two operands for " << getOperatorName(str[idx]) << std::endl;
 					break;
 				}
 
