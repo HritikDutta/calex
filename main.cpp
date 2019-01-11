@@ -136,6 +136,11 @@ bool isAlphabet(const char& ch)
 		|| (ch >= 'a' && ch <= 'z');
 }
 
+bool isWhiteSpace(const char& ch)
+{
+	return ch == ' ' || ch == '\t' || ch == '\n';
+}
+
 //Compare subset of first string to given string
 bool compareSubString(const char*& str1, int beg, int len, const char* str2)
 {
@@ -319,6 +324,10 @@ const char* in_post(const char*& str)
 	{
 		if (isDigit(str[idx]) || str[idx] == '.')
 		{
+			//If two digits are separated by whitspaces then they are separate numbers
+			if (idx > 0 && isWhiteSpace(str[idx - 1]))
+				new_str[n_idx++] = ' ';
+
 			new_str[n_idx++] = str[idx];
 			allow_neg = false;
 		} else if (isAlphabet(str[idx]) && str[idx] != 'n')
