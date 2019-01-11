@@ -10,6 +10,18 @@
 //Later size of input string will be calculated
 #define MAX_SIZE 100
 
+//Errors related to stack
+enum StackError {
+	EMPTY_STACK
+};
+
+//Errors that can be found during calculation
+enum CalError {
+	NO_OPERAND_UN,
+	NO_OPERANDS_BIN,
+	EXTRA_VALUES
+};
+
 //Check for balanced brackets in expression
 bool balanced(const char* str)
 {
@@ -471,6 +483,10 @@ void operate(Stack<double>& values, const char* str, int idx)
 {
 	if (isUnaryOp(str[idx]))
 	{
+		//Throw exception if value is not in stack
+		if (values.size() < 1)
+			throw NO_OPERAND_UN;
+
 		//If unary operator is encountered
 		double val = values.top();
 		values.pop();
@@ -486,6 +502,10 @@ void operate(Stack<double>& values, const char* str, int idx)
 		#endif
 	} else if (isBinaryOp(str[idx]))
 	{
+		//Throw exception if stack has less than 2 values
+		if (values.size() < 2)
+			throw NO_OPERANDS_BIN;
+
 		//If binary operator is encountered
 		double val2 = values.top();
 		values.pop();
@@ -580,10 +600,34 @@ double solve(const char* str)
 				#endif
 			}
 
-			//Calculate according to operator
-			operate(values, str, idx);
+			try
+			{
+				//Calculate according to operator
+				operate(values, str, idx);
+			} catch (CalError& e)
+			{
+				switch (e)
+				{
+				case NO_OPERAND_UN:
+					std::cerr << "Error: no operand for " << str[idx] << std::endl;
+					break;
+				
+				case NO_OPERANDS_BIN:
+					std::cerr << "Error: less than two operands for " << str[idx] << std::endl;
+					break;
+				}
+
+				//Break loop if error is encountered
+				break;
+			}
 		}
 	}
+
+	//Throw exception if stack is empty after calculation
+	if (values.empty())
+		throw EMPTY_STACK;
+	else if (values.size() > 1)
+		throw EXTRA_VALUES;
 
 	//The only value left in the stack is the result
 	double res = values.top();
@@ -614,15 +658,34 @@ int main(int argc, char const *argv[])
 	//Change from infix to postfix
 	const char* post = in_post(expr);
 
-	//Solve the postfix expression
-	double res = solve(post);
+	try
+	{
+		//Solve the postfix expression
+		double res = solve(post);
 
-	#ifdef DEBUG
-	std::cout << "result    : ";
-	#endif
+		#ifdef DEBUG
+		std::cout << "result    : ";
+		#endif
 
-	//Show the solution to the expression
-	std::cout << res << std::endl;
+		//Show the solution to the expression
+		std::cout << res << std::endl;
+	} catch (StackError& e)
+	{
+		switch (e)
+		{
+		case EMPTY_STACK:
+			std::cerr << "Calculation failed" << std::endl;
+			break;
+		}
+	} catch (CalError& e)
+	{
+		switch (e)
+		{
+		case EXTRA_VALUES:
+			std::cerr << "Not enough operators" << std::endl;
+			break;
+		}
+	}
 
 	delete[] post;
 }

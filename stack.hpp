@@ -70,7 +70,7 @@ public:
 	{
 		int cnt = 0;
 		Node* temp = head;
-		while (!temp)
+		while (temp)
 		{
 			cnt++;
 			temp = temp->next;
