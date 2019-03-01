@@ -358,9 +358,9 @@ const char* in_post(const char*& exp)
 {
     Stack<char> operators;
 	
-	//Size of postfix expression is slightly larger to commpensate for additional spaces
-	int size = strlen(exp);
-	size *= 1.5;
+    //Size of postfix expression is slightly larger to commpensate for additional spaces
+    int size = strlen(exp);
+    size *= 1.5;
     char* post = new char[size];
 
 	int pIdx = 0;
@@ -395,7 +395,6 @@ const char* in_post(const char*& exp)
         }
 
         char opCode = getOperatorCode(exp, idx, allow_neg);
-
         if (isUnaryOp(opCode) || isBinaryOp(opCode))
         {
 			//Overwrite extra space if operator needs to be written
