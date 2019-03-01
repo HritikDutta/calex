@@ -4,11 +4,7 @@
 #include "stack.hpp"
 
 //Uncomment for debugging
-#define DEBUG
-
-//This is temporary
-//Later size of input string will be calculated
-#define MAX_SIZE 100
+// #define DEBUG
 
 //Errors related to stack
 enum StackError {
@@ -21,6 +17,15 @@ enum CalError {
 	NO_OPERANDS_BIN,
 	EXTRA_VALUES
 };
+
+int strlen(const char* str)
+{
+	int len = 0;
+	while (str[len])
+		len++;
+	
+	return len;
+}
 
 //Check for balanced brackets in expression
 bool balanced(const char* str)
@@ -352,7 +357,11 @@ bool greaterPrec(const char& curOp, const char& opInStack)
 const char* in_post(const char*& exp)
 {
     Stack<char> operators;
-    char* post = new char[MAX_SIZE];
+	
+	//Size of postfix expression is slightly larger to commpensate for additional spaces
+	int size = strlen(exp);
+	size *= 1.5;
+    char* post = new char[size];
 
 	int pIdx = 0;
     bool allow_neg = true;      //Tracks if '-' is unary or binary
@@ -364,7 +373,7 @@ const char* in_post(const char*& exp)
         if (isDigit(exp[idx]) || exp[idx] == '.')
         {
             //If two digits are separated by whitspaces then they are separate numbers
-            if (idx > 0 && isWhiteSpace(exp[idx - 1]))
+            if (idx > 0 && !isDigit(exp[idx - 1]))
                 post[pIdx++] = ' ';
 
             post[pIdx++] = exp[idx];
@@ -457,7 +466,7 @@ const char* in_post(const char*& exp)
 
     //For debugging
 	#ifdef DEBUG
-	std::cout << post << "\n";
+	std::cout << post << std::endl;
 	#endif
 
 	return post;
