@@ -4,7 +4,7 @@
 #include "stack.hpp"
 
 //Uncomment for debugging
-// #define DEBUG
+#define DEBUG
 
 //This is temporary
 //Later size of input string will be calculated
@@ -49,12 +49,12 @@ const int getBinPrec(const char& ch)
 	{
 	case '&':
 	case '|':
-		return 6;
+		return 5;
 
 	case '<':
 	case '>':
-		return 5;
-		
+	case 'G':
+	case 'g':
 	case '=':
 		return 4;
 
@@ -158,7 +158,7 @@ bool compareSubString(const char*& str1, int beg, int len, const char* str2)
 
 //Checks if a constant is at the given index and moves index to the end
 //Constants are represneted by their first letter in capital
-const char checkForConstants(const char*& str, int& idx)
+const char getConstCode(const char*& str, int& idx)
 {
 	switch(str[idx])
 	{
@@ -196,7 +196,7 @@ double getConstValue(const char& ch)
 //Checks if a function is at the given index and moves index to the end
 //Most functions are represented by their first letters
 //Sec, Cosec and Cot are represented by the capital letters of their respective inverses
-const char checkForFunctions(const char*& str, int& idx)
+const char getOperatorCode(const char*& str, int& idx, const bool neg = false)
 {
 	switch(str[idx])
 	{
@@ -255,8 +255,36 @@ const char checkForFunctions(const char*& str, int& idx)
 		else
 			return '\0';
 	
+	case '<':
+		if (compareSubString(str, idx, 2, "<="))
+		{
+			idx += 2;
+			return 'g';
+		}
+		else
+			return str[idx++];
+
+	case '>':
+		if (compareSubString(str, idx, 2, ">="))
+		{
+			idx += 2;
+			return 'G';
+		}
+		else
+			return str[idx++];
+	
+	case '-':
+		idx++;
+		if (neg)
+			return 'n';
+		else
+			return '-';
+
 	default:
-		return '\0';
+		if (isBinaryOp(str[idx]) || isUnaryOp(str[idx]))
+			return str[idx++];
+		else
+			return '\0';
 	}
 }
 
@@ -290,8 +318,17 @@ const char* getOperatorName(const char& op)
 	case 'T':
 		return "cot";
 	
+	case 'G':
+		return ">=";
+	
+	case 'g':
+		return "<=";
+
 	default:
-		return &op;
+		char* str = new char[2];
+		str[0] = op;
+		str[1] = '\0';
+		return str;
 	}
 }
 
@@ -306,149 +343,124 @@ bool greaterPrec(const char& curOp, const char& opInStack)
 		return true;
 
 	if (isUnaryOp(curOp) && isUnaryOp(opInStack))
-		return getUnPrec(curOp) >= getUnPrec(opInStack);
+		return getUnPrec(curOp) > getUnPrec(opInStack);
 	else
-		return getBinPrec(curOp) >= getBinPrec(opInStack);
+		return getBinPrec(curOp) > getBinPrec(opInStack);
 }
 
 //Convert expression from infix to postfix
-const char* in_post(const char*& str)
+const char* in_post(const char*& exp)
 {
-	Stack<char> op;
-	char* new_str = new char[MAX_SIZE];
+    Stack<char> operators;
+    char* post = new char[MAX_SIZE];
 
-	int idx = 0, n_idx = 0;
-	bool allow_neg = true;  //Tracks if '-' is unary or binary
+	int pIdx = 0;
+    bool allow_neg = true;      //Tracks if '-' is unary or binary
 
-	for (int idx = 0; str[idx]; idx++)
-	{
-		if (isDigit(str[idx]) || str[idx] == '.')
-		{
-			//If two digits are separated by whitspaces then they are separate numbers
-			if (idx > 0 && isWhiteSpace(str[idx - 1]))
-				new_str[n_idx++] = ' ';
-
-			new_str[n_idx++] = str[idx];
-			allow_neg = false;
-		} else if (isAlphabet(str[idx]) && str[idx] != 'n')
+    for (int idx = 0; exp[idx]; idx++)
+    {
+        
+        //Numbers are directly entered into the postfix expression
+        if (isDigit(exp[idx]) || exp[idx] == '.')
         {
-			char ch = checkForConstants(str, idx);
+            //If two digits are separated by whitspaces then they are separate numbers
+            if (idx > 0 && isWhiteSpace(exp[idx - 1]))
+                post[pIdx++] = ' ';
 
-			if (ch)
+            post[pIdx++] = exp[idx];
+            allow_neg = false;
+            continue;
+        }
+
+        //Check for constants
+        char constCode = getConstCode(exp, idx);
+        if (isConstant(constCode))
+        {
+            if (idx > 0 && (isDigit(post[pIdx - 1]) || isConstant(post[pIdx - 1])))
+                post[pIdx++] = ' ';
+            
+            post[pIdx++] = constCode;
+            allow_neg = false;
+			idx--;
+            continue;
+        }
+
+        char opCode = getOperatorCode(exp, idx, allow_neg);
+
+        if (isUnaryOp(opCode) || isBinaryOp(opCode))
+        {
+			//Overwrite extra space if operator needs to be written
+			if (post[pIdx - 1] == ' ')
+				pIdx--;
+			
+            //Pop operators and add to string until an operator of greater precedence is found
+			while(!operators.empty()
+                && operators.top() != '('
+                && greaterPrec(opCode, operators.top()))
 			{
-				new_str[n_idx++] = ch;
-				allow_neg = false;
-			} else
-			{
-				ch = checkForFunctions(str, idx);
 
-				if (ch)
-				{
-					op.push(ch);
-					allow_neg = true;
-				}
-			}
-			//As idx is pushed to the end of the function,
-			//It must be moved one idx back
-			if (ch)
-				idx--;
-        } else if (isUnaryOp(str[idx]))
-		{
-			//Pop operators and add to string until an operator of greater precedence is found
-			while(!op.empty() && op.top() != '(' && greaterPrec(str[idx], op.top()))
-			{
-				//Overwrite extra space if operator needs to be written
-				if (new_str[n_idx - 1] == ' ')
-					n_idx--;
-
-				new_str[n_idx++] = op.top();
-				op.pop();
-			}
-
-			op.push(str[idx]);
-		} else if (isBinaryOp(str[idx]))
-		{
-			//If unary '-' is encountered
-			if (allow_neg && str[idx] == '-')
-			{
-				//Unary '-' is represented as 'n'
-				op.push('n');
-				allow_neg = false;
-
-				continue;
+				post[pIdx++] = operators.top();
+				operators.pop();
 			}
 
-			//Add space after each number
-			if (isDigit(new_str[n_idx - 1]))
-			{
-				new_str[n_idx++] = ' ';
-
-				//'-' after a number is binary
-				allow_neg = false;
-			}
-
-			//Pop operators and add to string until an operator of greater precedence is found
-			while(!op.empty() && op.top() != '(' && greaterPrec(str[idx], op.top()))
-			{
-				//Overwrite extra space if operator needs to be written
-				if (new_str[n_idx - 1] == ' ')
-					n_idx--;
-
-				new_str[n_idx++] = op.top();
-				op.pop();
-			}
-
-			op.push(str[idx]);
+			operators.push(opCode);
 
 			//'-' after any operator will be unary
 			allow_neg = true;
-		} else if (str[idx] == '(')
-		{
-            if (isDigit(str[idx - 1]))
-                new_str[n_idx++] = ' ';
+			idx--;
+            continue;
+        }
 
-			op.push('(');
+        //If brackets are encountered
+        if (exp[idx] == '(')
+        {
+            if (isDigit(exp[idx - 1]))
+                post[pIdx++] = ' ';
+
+			operators.push('(');
 
 			//'-' just after '(' is unary
 			allow_neg = true;
-		} else if (str[idx] == ')')
-		{
-			while (op.top() != '(')
+        }
+        else if (exp[idx] == ')')
+        {
+            while (operators.top() != '(')
 			{
-				new_str[n_idx++] = op.top();
-				op.pop();
+				post[pIdx++] = operators.top();
+				operators.pop();
 			}
 
-			op.pop();
+			operators.pop();
 
 			//'-' just after ')' is binary
 			allow_neg = false;
 
-			if (!op.empty() && isUnaryOp(op.top()))
+			if (!operators.empty() && isUnaryOp(operators.top()))
 			{
-				new_str[n_idx++] = op.top();
-				op.pop();
+				post[pIdx++] = operators.top();
+				operators.pop();
 			}
 
-			if (isDigit(new_str[n_idx - 1]))
-				new_str[n_idx++] = ' ';
-		}
-	}
+			if (isDigit(post[pIdx - 1]))
+				post[pIdx++] = ' ';
+        }
 
-	//Append remaining operators
-	while (!op.empty())
+    }
+
+	//If any operators are left then all are added to the expression
+	while (!operators.empty())
 	{
-		new_str[n_idx++] = op.top();
-		op.pop();
+		post[pIdx++] = operators.top();
+		operators.pop();
 	}
-	new_str[n_idx] = '\0';
+	post[pIdx] = '\0';
 
-	//For debugging
+    //For debugging
 	#ifdef DEBUG
-	std::cout << new_str << "\n";
+	std::cout << post << "\n";
 	#endif
 
-	return new_str;
+	return post;
 }
 
 //Calculate according to respective operator with given values
@@ -471,6 +483,12 @@ double operateBin(const double& val1, const char& op, const double& val2)
 	
 	case '>':
 		return val1 > val2;
+
+	case 'G':
+		return val1 >= val2;
+	
+	case 'g':
+		return val1 <= val2;
 
 	case 'l':
 		return log(val2) / log(val1);
@@ -542,11 +560,12 @@ void operate(Stack<double>& values, const char* str, int idx)
 		values.push(res);
 
 		#ifdef DEBUG
-		std::cout << "operation : " << str[idx] << " " << val << " = " << res << std::endl;
+		std::cout << "operation : " << getOperatorName(str[idx]) << " " << val << " = " << res << std::endl;
 		std::cout << "stack     : ";
 		values.display();
 		std::cout << std::endl;
 		#endif
+
 	} else if (isBinaryOp(str[idx]))
 	{
 		//Throw exception if stack has less than 2 values
@@ -565,33 +584,12 @@ void operate(Stack<double>& values, const char* str, int idx)
 
 		//For debugging
 		#ifdef DEBUG
-		std::cout << "operation : " << val1 << " " << str[idx] << " " << val2 << " = " << res << std::endl;
+		std::cout << "operation : " << val1 << " " << getOperatorName(str[idx]) << " " << val2 << " = " << res << std::endl;
 		std::cout << "stack     : ";
 		values.display();
 		std::cout << std::endl;
 		#endif
 
-		//For <= and >=
-		if (str[idx] == '=' && (str[idx + 1] == '<' || str[idx + 1] == '>'))
-		{
-			//If = is encountered followed by > or < then values are pushed back to re-evaluate
-			values.push(val1);
-			values.push(val2);
-		} else if ((str[idx + 1] == '<' || str[idx + 1] == '>') && str[idx - 1] == '=')
-		{
-			val2 = values.top();
-			values.pop();
-			val1 = values.top();
-			values.pop();
-			
-			//Both results are compared to get the result
-			res = val1 || val2;
-			values.push(res);
-		
-			#ifdef DEBUG
-			std::cout << val1 << " | " << val2 << " = " << res << std::endl;
-			#endif
-		}
 	}
 }
 
