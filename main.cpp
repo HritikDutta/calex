@@ -285,6 +285,33 @@ const char getOperatorCode(const char*& str, int& idx, const bool neg = false)
 		else
 			return '-';
 
+	case '&':
+		if (compareSubString(str, idx, 2, "&&"))
+		{
+			idx += 2;
+			return '&';
+		}
+		else
+			return '\0';
+
+	case '|':
+		if (compareSubString(str, idx, 2, "||"))
+		{
+			idx += 2;
+			return '|';
+		}
+		else
+			return '\0';
+	
+	case '=':
+		if (compareSubString(str, idx, 2, "=="))
+		{
+			idx += 2;
+			return '=';
+		}
+		else
+			return '\0';
+
 	default:
 		if (isBinaryOp(str[idx]) || isUnaryOp(str[idx]))
 			return str[idx++];
@@ -328,6 +355,15 @@ const char* getOperatorName(const char& op)
 	
 	case 'g':
 		return "<=";
+	
+	case '&':
+		return "&&";
+	
+	case '|':
+		return "||";
+	
+	case '=':
+		return "==";
 
 	default:
 		char* str = new char[2];
@@ -358,7 +394,7 @@ const char* in_post(const char*& exp)
 {
     Stack<char> operators;
 	
-    //Size of postfix expression is slightly larger to commpensate for additional spaces
+    //Size of postfix expression is larger to commpensate for additional spaces
     int size = strlen(exp);
     size *= 1.5;
     char* post = new char[size];
